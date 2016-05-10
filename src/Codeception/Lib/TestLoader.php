@@ -153,6 +153,8 @@ class TestLoader
         $cept->configName($name)
             ->configFile($file);
 
+	    $cept->setBackupGlobals(false);
+	    $cept->setBackupStaticAttributes(false);
         $this->tests[] = $cept;
     }
 
