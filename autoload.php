@@ -91,3 +91,9 @@ function codecept_relative_path($path)
 {
     return substr($path, strlen(codecept_root_dir()));
 }
+
+class ActorException extends \Exception
+{
+	/** @var \Codeception\Actor */
+	public $actor;
+}

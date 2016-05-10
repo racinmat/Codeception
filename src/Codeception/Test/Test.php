@@ -91,6 +91,8 @@ abstract class Test implements TestInterface, Interfaces\Descriptive
             } catch (\Exception $e) {
                 $e     = new \PHPUnit_Framework_ExceptionWrapper($e);
                 $status = self::STATUS_ERROR;
+            } catch (\ActorException $e) {
+	            throw $e;
             }
             $time = \PHP_Timer::stop();
         }
