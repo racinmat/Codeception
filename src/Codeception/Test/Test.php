@@ -86,13 +86,14 @@ abstract class Test implements TestInterface, Interfaces\Descriptive
             } catch (\PHPUnit_Framework_Exception $e) {
                 $status = self::STATUS_ERROR;
             } catch (\Throwable $e) {
+	            if ($e instanceof \ActorException) {
+		            throw $e;
+	            }
                 $e     = new \PHPUnit_Framework_ExceptionWrapper($e);
                 $status = self::STATUS_ERROR;
             } catch (\Exception $e) {
                 $e     = new \PHPUnit_Framework_ExceptionWrapper($e);
                 $status = self::STATUS_ERROR;
-            } catch (\ActorException $e) {
-	            throw $e;
             }
             $time = \PHP_Timer::stop();
         }
