@@ -1305,7 +1305,7 @@ class WebDriver extends CodeceptionModule implements
     }
 
 
-    protected function filterByAttributes($els, array $attributes)
+    public function filterByAttributes($els, array $attributes)
     {
         foreach ($attributes as $attr => $value) {
             $els = array_filter(
@@ -2385,7 +2385,7 @@ class WebDriver extends CodeceptionModule implements
      * @param $selector
      * @return array
      */
-    protected function matchVisible($selector)
+    public function matchVisible($selector)
     {
         $els = $this->match($this->webDriver, $selector);
         $nodes = array_filter(
