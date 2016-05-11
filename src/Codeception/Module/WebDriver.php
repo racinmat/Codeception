@@ -2110,7 +2110,7 @@ class WebDriver extends CodeceptionModule implements
      * @param bool $throwMalformed
      * @return array
      */
-    protected function match($page, $selector, $throwMalformed = true)
+    public function match($page, $selector, $throwMalformed = true)
     {
         if (is_array($selector)) {
             try {
@@ -2265,7 +2265,7 @@ class WebDriver extends CodeceptionModule implements
         $this->assertThat($nodes, new WebDriverConstraintNot($text, $this->_getCurrentUri()), $selector);
     }
 
-    protected function assertPageContains($needle, $message = '')
+    public function assertPageContains($needle, $message = '')
     {
         $this->assertThat(
             htmlspecialchars_decode($this->getVisibleText()),
