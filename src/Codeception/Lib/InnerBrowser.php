@@ -1105,7 +1105,7 @@ class InnerBrowser extends Module implements Web, PageSourceSaver, ElementLocato
      *
      * @return Crawler
      */
-    protected function match($selector)
+    public function match($selector)
     {
         if (is_array($selector)) {
             return $this->strictMatch($selector);
