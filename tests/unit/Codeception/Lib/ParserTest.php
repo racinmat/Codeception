@@ -21,7 +21,7 @@ class ParserTest extends \Codeception\Test\Unit
 
     protected function _before()
     {
-        $cept = new \Codeception\Test\Cept('demo','DemoCept.php');
+        $cept = new \Codeception\Test\Cept('demo', 'DemoCept.php');
 
         $this->testMetadata = $cept->getMetadata();
         $this->scenario = new Codeception\Scenario($cept);
@@ -59,7 +59,6 @@ EOF;
         $this->parser->parseScenarioOptions($code);
         $this->assertContains('davert', $this->testMetadata->getGroups());
         $this->assertContains('windows', $this->testMetadata->getEnv());
-
     }
 
     public function testCommentedInBlockScenarioOptions()
@@ -83,7 +82,6 @@ EOF;
         $code = "<?php\n /*\n \\\$I->wantTo('run this test'); \n */";
         $this->parser->parseFeature($code);
         $this->assertNull($this->scenario->getFeature());
-
     }
 
     public function testScenarioSkipOptionsHandled()
@@ -118,7 +116,6 @@ EOF;
         $this->assertContains("jon does", $text);
         $this->assertContains("I have friend", $text);
         $this->assertContains("back to me", $text);
-
     }
 
     public function testParseFile()

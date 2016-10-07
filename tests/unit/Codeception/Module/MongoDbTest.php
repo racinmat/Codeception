@@ -1,6 +1,7 @@
 <?php
 
 use Codeception\Module\MongoDb;
+use Codeception\Exception\ModuleException;
 
 class MongoDbTest extends \PHPUnit_Framework_TestCase
 {
@@ -36,7 +37,11 @@ class MongoDbTest extends \PHPUnit_Framework_TestCase
 
         $this->module = new MongoDb(make_container());
         $this->module->_setConfig($this->mongoConfig);
-        $this->module->_initialize();
+        try {
+            $this->module->_initialize();
+        } catch (ModuleException $e) {
+            $this->markTestSkipped($e->getMessage());
+        }
 
         $this->db = $mongo->selectDatabase('test');
         $this->userCollection = $this->db->users;
@@ -70,7 +75,7 @@ class MongoDbTest extends \PHPUnit_Framework_TestCase
     {
         $user = $this->module->grabFromCollection('users', array('id' => 1));
         $this->assertTrue(isset($user['email']));
-        $this->assertEquals('miles@davis.com',$user['email']);
+        $this->assertEquals('miles@davis.com', $user['email']);
     }
 
     public function testSeeNumElementsInCollection()

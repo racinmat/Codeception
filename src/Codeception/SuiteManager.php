@@ -81,7 +81,10 @@ class SuiteManager
             $module->_initialize();
         }
         if (!file_exists(Configuration::supportDir() . $this->settings['class_name'] . '.php')) {
-            throw new Exception\ConfigurationException($this->settings['class_name'] . " class doesn't exist in suite folder.\nRun the 'build' command to generate it");
+            throw new Exception\ConfigurationException(
+                $this->settings['class_name']
+                . " class doesn't exist in suite folder.\nRun the 'build' command to generate it"
+            );
         }
         $this->dispatcher->dispatch(Events::SUITE_INIT, new Event\SuiteEvent($this->suite, null, $this->settings));
         ini_set('xdebug.show_exception_trace', 0); // Issue https://github.com/symfony/symfony/issues/7646
@@ -119,6 +122,16 @@ class SuiteManager
         }
 
         $groups = $this->groupManager->groupsForTest($test);
+
+        // registering group for data providers
+        if ($test instanceof \PHPUnit_Framework_TestSuite_DataProvider) {
+            $groupDetails = [];
+            foreach ($groups as $group) {
+                $groupDetails[$group] = $test->getGroupDetails()['default'];
+            }
+            $test->setGroupDetails($groupDetails);
+        }
+
         $this->suite->addTest($test, $groups);
 
         if (!empty($groups) && $test instanceof TestInterface) {
@@ -134,6 +147,9 @@ class SuiteManager
             $name = $this->settings['namespace'] . ".$name";
         }
         $suite->setName($name);
+        if (isset($this->settings['backup_globals'])) {
+            $suite->setBackupGlobals((bool) $this->settings['backup_globals']);
+        }
         $suite->setModules($this->moduleContainer->all());
         return $suite;
     }

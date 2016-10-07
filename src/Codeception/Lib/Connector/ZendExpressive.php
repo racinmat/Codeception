@@ -105,10 +105,18 @@ class ZendExpressive extends Client
     {
         $fileObjects = [];
         foreach ($files as $fieldName => $file) {
-            if (!isset($file['tmp_name']) && !isset($file['name'])) {
+            if ($file instanceof UploadedFile) {
+                $fileObjects[$fieldName] = $file;
+            } elseif (!isset($file['tmp_name']) && !isset($file['name'])) {
                 $fileObjects[$fieldName] = $this->convertFiles($file);
             } else {
-                $fileObjects[$fieldName] = new UploadedFile($file['tmp_name'], $file['size'], $file['error'], $file['name'], $file['type']);
+                $fileObjects[$fieldName] = new UploadedFile(
+                    $file['tmp_name'],
+                    $file['size'],
+                    $file['error'],
+                    $file['name'],
+                    $file['type']
+                );
             }
         }
         return $fileObjects;

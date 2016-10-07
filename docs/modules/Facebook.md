@@ -1,4 +1,4 @@
-
+# Facebook
 
 
 Provides testing for projects integrated with Facebook API.
@@ -10,9 +10,11 @@ To use this module with Composer you need <em>"facebook/php-sdk4": "5.*"</em> pa
 
 ## Status
 
-* Maintainer: **tiger-seo**
+[ ![Facebook Status for Codeception/Codeception](https://codeship.com/projects/e4bc90d0-1ed5-0134-566c-1ed679ae6c9d/status?branch=2.2)](https://codeship.com/projects/160201)
+
 * Stability: **beta**
-* Contact: tiger.seo@gmail.com
+* Maintainer: **tiger-seo**
+* Contact: tiger.seo@codeception.com
 
 ## Config
 
@@ -70,6 +72,8 @@ $I->see('Welcome, ' . $fbUserFirstName);
 @since 1.6.3
 @author tiger.seo@gmail.com
 
+
+## Actions
 
 ### grabFacebookTestUserAccessToken
  
@@ -149,4 +153,4 @@ Please, note that you must have publish_actions permission to be able to publish
 
  * `param string` $message published post to be verified against the actual post on facebook
 
-<p>&nbsp;</p><div class="alert alert-warning">Module reference is taken from the source code. <a href="https://github.com/Codeception/Codeception/tree/2.1/src/Codeception/Module/Facebook.php">Help us to improve documentation. Edit module reference</a></div>
+<p>&nbsp;</p><div class="alert alert-warning">Module reference is taken from the source code. <a href="https://github.com/Codeception/Codeception/tree/2.2/src/Codeception/Module/Facebook.php">Help us to improve documentation. Edit module reference</a></div>

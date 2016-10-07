@@ -106,9 +106,8 @@ class Scenario
             }
         }
         $text = str_replace(['"\'', '\'"'], ["'", "'"], $text);
-        $text = "<h3>" . strtoupper('I want to ' . $this->getFeature()) . "</h3>" . $text;
+        $text = "<h3>" . mb_strtoupper('I want to ' . $this->getFeature(), 'utf-8') . "</h3>" . $text;
         return $text;
-
     }
 
     public function getText()
@@ -118,9 +117,8 @@ class Scenario
             $text .= $step->getPrefix() . "$step \r\n";
         }
         $text = trim(str_replace(['"\'', '\'"'], ["'", "'"], $text));
-        $text = strtoupper('I want to ' . $this->getFeature()) . str_repeat("\r\n", 2) . $text . str_repeat("\r\n", 2);
+        $text = mb_strtoupper('I want to ' . $this->getFeature(), 'utf-8') . "\r\n\r\n" . $text . "\r\n\r\n";
         return $text;
-
     }
 
     public function comment($comment)
@@ -141,7 +139,7 @@ class Scenario
     public function __call($method, $args)
     {
         // all methods were deprecated and removed from here
-        Notification::deprecate("\$scenario->$method() was deprecated in 2.1 and removed. Don't use it");
+        trigger_error("Codeception: \$scenario->$method() has been deprecated and removed. Use annotations to pass scenario params", E_USER_DEPRECATED);
     }
 
     /**

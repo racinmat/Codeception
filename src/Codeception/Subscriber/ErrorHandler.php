@@ -3,13 +3,14 @@ namespace Codeception\Subscriber;
 
 use Codeception\Event\SuiteEvent;
 use Codeception\Events;
+use Codeception\Lib\Notification;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 class ErrorHandler implements EventSubscriberInterface
 {
     use Shared\StaticEvents;
 
-    static $events = [
+    public static $events = [
         Events::SUITE_BEFORE => 'handle'
     ];
 
@@ -24,15 +25,20 @@ class ErrorHandler implements EventSubscriberInterface
     /**
      * @var int stores bitmask for errors
      */
-    private $errorLevel = 'E_ALL & ~E_STRICT & ~E_DEPRECATED';
+    private $errorLevel;
+
+    public function __construct()
+    {
+        $this->errorLevel = E_ALL & ~E_STRICT & ~E_DEPRECATED;
+    }
 
     public function handle(SuiteEvent $e)
     {
         $settings = $e->getSettings();
         if ($settings['error_level']) {
-            $this->errorLevel = $settings['error_level'];
+            $this->errorLevel = eval("return {$settings['error_level']};");
         }
-        error_reporting(eval("return {$this->errorLevel};"));
+        error_reporting($this->errorLevel);
         // We must register shutdown function before deprecation error handler to restore previous error handler
         // and silence DeprecationErrorHandler yelling about 'THE ERROR HANDLER HAS CHANGED!'
         register_shutdown_function([$this, 'shutdownHandler']);
@@ -44,6 +50,7 @@ class ErrorHandler implements EventSubscriberInterface
     {
         if (E_USER_DEPRECATED === $errno) {
             $this->handleDeprecationError($errno, $errstr, $errfile, $errline, $context);
+            return;
         }
 
         if (!(error_reporting() & $errno)) {
@@ -93,7 +100,12 @@ class ErrorHandler implements EventSubscriberInterface
             $old = set_error_handler('var_dump');
             restore_error_handler();
 
-            if ($old && is_array($old) && count($old) > 0 && is_object($old[0]) && get_class($old[0]) === 'Symfony\Component\Debug\ErrorHandler') {
+            if ($old
+                && is_array($old)
+                && count($old) > 0
+                && is_object($old[0])
+                && get_class($old[0]) === 'Symfony\Component\Debug\ErrorHandler'
+            ) {
                 restore_error_handler();
             }
 
@@ -104,9 +116,13 @@ class ErrorHandler implements EventSubscriberInterface
 
     private function handleDeprecationError($type, $message, $file, $line, $context)
     {
+        if (!($this->errorLevel & $type)) {
+            return;
+        }
         if ($this->deprecationsInstalled && $this->oldHandler) {
             call_user_func($this->oldHandler, $type, $message, $file, $line, $context);
+            return;
         }
+        Notification::deprecate("$message", "$file:$line");
     }
-
 }

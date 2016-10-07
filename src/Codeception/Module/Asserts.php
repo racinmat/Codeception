@@ -2,14 +2,12 @@
 namespace Codeception\Module;
 
 use Codeception\Module as CodeceptionModule;
-use \Codeception\Util\Shared\Asserts as SharedAsserts;
 
 /**
  * Special module for using asserts in your tests.
  */
 class Asserts extends CodeceptionModule
 {
-    use SharedAsserts;
 
     /**
      * Checks that two variables are equal.
@@ -250,7 +248,7 @@ class Asserts extends CodeceptionModule
      * @param $actual
      * @param $description
      */
-    public function assertGreaterOrEquals($expected, $actual, $description = null)
+    public function assertGreaterOrEquals($expected, $actual, $description = '')
     {
         $this->assertGreaterThanOrEqual($expected, $actual, $description);
     }
@@ -260,7 +258,7 @@ class Asserts extends CodeceptionModule
      * @param $actual
      * @param $description
      */
-    public function assertLessOrEquals($expected, $actual, $description = null)
+    public function assertLessOrEquals($expected, $actual, $description = '')
     {
         $this->assertLessThanOrEqual($expected, $actual, $description);
     }
@@ -269,7 +267,7 @@ class Asserts extends CodeceptionModule
      * @param $actual
      * @param $description
      */
-    public function assertIsEmpty($actual, $description = null)
+    public function assertIsEmpty($actual, $description = '')
     {
         $this->assertEmpty($actual, $description);
     }
@@ -279,7 +277,7 @@ class Asserts extends CodeceptionModule
      * @param $actual
      * @param $description
      */
-    public function assertArrayHasKey($key, $actual, $description = null)
+    public function assertArrayHasKey($key, $actual, $description = '')
     {
         parent::assertArrayHasKey($key, $actual, $description);
     }
@@ -289,7 +287,7 @@ class Asserts extends CodeceptionModule
      * @param $actual
      * @param $description
      */
-    public function assertArrayNotHasKey($key, $actual, $description = null)
+    public function assertArrayNotHasKey($key, $actual, $description = '')
     {
         parent::assertArrayNotHasKey($key, $actual, $description);
     }
@@ -299,7 +297,7 @@ class Asserts extends CodeceptionModule
      * @param $actual
      * @param $description
      */
-    public function assertInstanceOf($class, $actual, $description = null)
+    public function assertInstanceOf($class, $actual, $description = '')
     {
         parent::assertInstanceOf($class, $actual, $description);
     }
@@ -309,7 +307,7 @@ class Asserts extends CodeceptionModule
      * @param $actual
      * @param $description
      */
-    public function assertNotInstanceOf($class, $actual, $description = null)
+    public function assertNotInstanceOf($class, $actual, $description = '')
     {
         parent::assertNotInstanceOf($class, $actual, $description);
     }
@@ -319,7 +317,7 @@ class Asserts extends CodeceptionModule
      * @param $actual
      * @param $description
      */
-    public function assertInternalType($type, $actual, $description = null)
+    public function assertInternalType($type, $actual, $description = '')
     {
         parent::assertInternalType($type, $actual, $description);
     }
@@ -361,32 +359,38 @@ class Asserts extends CodeceptionModule
      * @param $callback
      */
     public function expectException($exception, $callback)
-     {
-         $code = null;
-         $msg = null;
-         if (is_object($exception)) {
-             /** @var $exception \Exception  **/
+    {
+        $code = null;
+        $msg = null;
+        if (is_object($exception)) {
+            /** @var $exception \Exception  **/
              $class = get_class($exception);
-             $msg = $exception->getMessage();
-             $code = $exception->getCode();
-         } else {
-             $class = $exception;
-         }
-         try {
-             $callback();
-         } catch (\Exception $e) {
-             if (!$e instanceof $class) {
-                 $this->fail(sprintf("Exception of class $class expected to be thrown, but %s caught", get_class($e)));
-             }
-             if (null !== $msg and $e->getMessage() !== $msg) {
-                 $this->fail(sprintf("Exception of $class expected to be '$msg', but actual message was '%s'", $e->getMessage()));
-             }
-             if (null !== $code and $e->getCode() !== $code) {
-                 $this->fail(sprintf("Exception of $class expected to have code $code, but actual code was %s", $e->getCode()));
-             }
-             $this->assertTrue(true); // increment assertion counter
+            $msg = $exception->getMessage();
+            $code = $exception->getCode();
+        } else {
+            $class = $exception;
+        }
+        try {
+            $callback();
+        } catch (\Exception $e) {
+            if (!$e instanceof $class) {
+                $this->fail(sprintf("Exception of class $class expected to be thrown, but %s caught", get_class($e)));
+            }
+            if (null !== $msg and $e->getMessage() !== $msg) {
+                $this->fail(sprintf(
+                    "Exception of $class expected to be '$msg', but actual message was '%s'",
+                    $e->getMessage()
+                ));
+            }
+            if (null !== $code and $e->getCode() !== $code) {
+                $this->fail(sprintf(
+                    "Exception of $class expected to have code $code, but actual code was %s",
+                    $e->getCode()
+                ));
+            }
+            $this->assertTrue(true); // increment assertion counter
              return;
-         }
-         $this->fail("Expected exception to be thrown, but nothing was caught");
-     }
+        }
+        $this->fail("Expected exception to be thrown, but nothing was caught");
+    }
 }

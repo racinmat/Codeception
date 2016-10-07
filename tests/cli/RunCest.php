@@ -130,10 +130,10 @@ class RunCest
     {
         $I->executeCommand('run dummy');
         $I->seeInShellOutput('Optimistic');
-        $I->seeInShellOutput('Dummy Tests (5)');
+        $I->seeInShellOutput('Dummy Tests (6)');
         $I->executeCommand('run dummy --skip-group ok');
         $I->seeInShellOutput('Pessimistic');
-        $I->seeInShellOutput('Dummy Tests (4)');
+        $I->seeInShellOutput('Dummy Tests (5)');
         $I->dontSeeInShellOutput('Optimistic');
     }
 
@@ -141,14 +141,15 @@ class RunCest
     {
         $I->executeCommand('run skipped,dummy --no-exit');
         $I->seeInShellOutput("Skipped Tests (3)");
-        $I->seeInShellOutput("Dummy Tests (5)");
+        $I->seeInShellOutput("Dummy Tests (6)");
         $I->dontSeeInShellOutput("Remote Tests");
     }
 
     public function skipSuites(\CliGuy $I)
     {
         $I->executeCommand(
-          'run dummy --skip skipped --skip remote --skip remote_server --skip order --skip unit --skip powers --skip math --skip messages'
+            'run dummy --skip skipped --skip remote --skip remote_server --skip order --skip unit '
+            . '--skip powers --skip math --skip messages'
         );
         $I->seeInShellOutput("Dummy Tests");
         $I->dontSeeInShellOutput("Remote Tests");
@@ -199,8 +200,8 @@ class RunCest
         $I->seeInThisFile('<testsuite name="dummy"');
         $I->seeInThisFile('<testcase name="FileExists"');
         $I->seeFileFound('myownhtmlreport.html', 'tests/_output');
-        $I->dontSeeFileFound('report.xml','tests/_output');
-        $I->dontSeeFileFound('report.html','tests/_output');
+        $I->dontSeeFileFound('report.xml', 'tests/_output');
+        $I->dontSeeFileFound('report.html', 'tests/_output');
     }
 
     public function runTestsWithDependencyInjections(\CliGuy $I)
@@ -242,7 +243,7 @@ Scenario --
  I see file found "scenario.suite.yml"
  PASSED
 EOF
-);
+        );
     }
 
     /**
@@ -385,5 +386,13 @@ EOF
         $I->seeInShellOutput('I see file found "unit.suite.yml"');
     }
 
-
+    public function runTestWithComplexExample(CliGuy $I)
+    {
+        $I->executeCommand('run scenario ExamplesCest:filesExistsComplexJson --debug');
+        $I->seeInShellOutput('Files exists complex json | {"path":"."');
+        $I->seeInShellOutput('OK (1 test');
+        $I->seeInShellOutput('I see file found "scenario.suite.yml"');
+        $I->seeInShellOutput('I see file found "dummy.suite.yml"');
+        $I->seeInShellOutput('I see file found "unit.suite.yml"');
+    }
 }

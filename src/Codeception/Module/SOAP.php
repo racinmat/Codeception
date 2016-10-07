@@ -1,6 +1,7 @@
 <?php
 namespace Codeception\Module;
 
+use Codeception\Lib\Interfaces\ConflictsWithModule;
 use Codeception\Lib\Interfaces\DependsOnModule;
 use Codeception\Module as CodeceptionModule;
 use Codeception\TestInterface;
@@ -10,6 +11,7 @@ use Codeception\Lib\Framework;
 use Codeception\Lib\InnerBrowser;
 use Codeception\Util\Soap as SoapUtils;
 use Codeception\Util\XmlStructure;
+use Codeception\Lib\Interfaces\API;
 
 /**
  * Module for testing SOAP WSDL web services.
@@ -34,14 +36,19 @@ use Codeception\Util\XmlStructure;
  * ## Configuration
  *
  * * endpoint *required* - soap wsdl endpoint
+ * * SOAPAction - replace SOAPAction HTTP header (Set to '' to SOAP 1.2)
  *
  * ## Public Properties
  *
  * * xmlRequest - last SOAP request (DOMDocument)
  * * xmlResponse - last SOAP response (DOMDocument)
  *
+ * ## Conflicts
+ *
+ * Conflicts with REST module
+ *
  */
-class SOAP extends CodeceptionModule implements DependsOnModule
+class SOAP extends CodeceptionModule implements DependsOnModule, API, ConflictsWithModule
 {
     protected $config = [
         'schema' => "",
@@ -95,9 +102,21 @@ EOF;
         $this->xmlStructure = null;
     }
 
+    protected function onReconfigure()
+    {
+        $this->buildRequest();
+        $this->xmlResponse = null;
+        $this->xmlStructure = null;
+    }
+
     public function _depends()
     {
         return ['Codeception\Lib\InnerBrowser' => $this->dependencyMessage];
+    }
+
+    public function _conflicts()
+    {
+        return 'Codeception\Lib\Interfaces\API';
     }
 
     public function _inject(InnerBrowser $connectionModule)
@@ -247,7 +266,7 @@ EOF;
     public function seeSoapResponseEquals($xml)
     {
         $xml = SoapUtils::toXml($xml);
-        $this->assertEquals($this->getXmlResponse()->C14N(), $xml->C14N());
+        $this->assertEquals($xml->C14N(), $this->getXmlResponse()->C14N());
     }
 
     /**
@@ -288,7 +307,7 @@ EOF;
     public function dontSeeSoapResponseEquals($xml)
     {
         $xml = SoapUtils::toXml($xml);
-        \PHPUnit_Framework_Assert::assertXmlStringNotEqualsXmlString($this->getXmlResponse()->C14N(), $xml->C14N());
+        \PHPUnit_Framework_Assert::assertXmlStringNotEqualsXmlString($xml->C14N(), $this->getXmlResponse()->C14N());
     }
 
 
@@ -461,7 +480,7 @@ EOF;
             [
                 'HTTP_Content-Type' => 'text/xml; charset=UTF-8',
                 'HTTP_Content-Length' => strlen($body),
-                'HTTP_SOAPAction' => $action
+                'HTTP_SOAPAction' => isset($this->config['SOAPAction']) ? $this->config['SOAPAction'] : $action
             ],
             $body
         );

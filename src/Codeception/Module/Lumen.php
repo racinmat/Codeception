@@ -56,6 +56,11 @@ class Lumen extends Framework implements ActiveRecord
     protected $config = [];
 
     /**
+     * @var bool
+     */
+    protected $booted = false;
+
+    /**
      * Constructor.
      *
      * @param ModuleContainer $container
@@ -117,22 +122,16 @@ class Lumen extends Framework implements ActiveRecord
     }
 
     /**
-     * After step hook.
-     *
-     * @param \Codeception\Step $step
-     */
-    public function _afterStep(Step $step)
-    {
-        Facade::clearResolvedInstances();
-    }
-
-    /**
      * Initialize the Lumen framework.
      *
      * @throws ModuleConfig
      */
     protected function initializeLumen()
     {
+        if ($this->booted) {
+            Facade::clearResolvedInstances();
+        }
+
         $this->app = $this->bootApplication();
         $this->app->instance('request', new Request());
         $this->client = new LumenConnector($this->app);
@@ -164,6 +163,7 @@ class Lumen extends Framework implements ActiveRecord
         }
 
         $app = require $bootstrapFile;
+        $this->booted = true;
 
         return $app;
     }
@@ -246,7 +246,7 @@ class Lumen extends Framework implements ActiveRecord
     {
         $url = $route['uri'];
 
-        while(count($params) > 0) {
+        while (count($params) > 0) {
             $param = array_shift($params);
             $url = preg_replace('/{.+?}/', $param, $url, 1);
         }
@@ -298,15 +298,24 @@ class Lumen extends Framework implements ActiveRecord
      * an array of credentials.
      *
      * @param  \Illuminate\Contracts\Auth\User|array $user
-     * @param  string $driver
+     * @param  string|null $driver The authentication driver for Lumen <= 5.1.*, guard name for Lumen >= 5.2
      * @return void
      */
     public function amLoggedAs($user, $driver = null)
     {
+        $guard = $auth = $this->app['auth'];
+        if (method_exists($auth, 'driver')) {
+            $guard = $auth->driver($driver);
+        }
+        if (method_exists($auth, 'guard')) {
+            $guard = $auth->guard($driver);
+        }
         if ($user instanceof Authenticatable) {
-            $this->app['auth']->driver($driver)->setUser($user);
-        } else {
-            $this->app['auth']->driver($driver)->attempt($user);
+            $guard->setUser($user);
+            return;
+        }
+        if (! $guard->attempt($user)) {
+            $this->fail("Failed to login with credentials " . json_encode($user));
         }
     }
 
@@ -420,7 +429,7 @@ class Lumen extends Framework implements ActiveRecord
             if (! $this->findModel($table, $attributes)) {
                 $this->fail("Could not find $table with " . json_encode($attributes));
             }
-        } else if (! $this->findRecord($table, $attributes)) {
+        } elseif (! $this->findRecord($table, $attributes)) {
             $this->fail("Could not find matching record in table '$table'");
         }
     }
@@ -446,7 +455,7 @@ class Lumen extends Framework implements ActiveRecord
             if ($this->findModel($table, $attributes)) {
                 $this->fail("Unexpectedly found matching $table with " . json_encode($attributes));
             }
-        } else if ($this->findRecord($table, $attributes)) {
+        } elseif ($this->findRecord($table, $attributes)) {
             $this->fail("Unexpectedly found matching record in table '$table'");
         }
     }
@@ -510,7 +519,7 @@ class Lumen extends Framework implements ActiveRecord
     /**
      * @param string $table
      * @param array $attributes
-     * @return mixed
+     * @return array
      */
     protected function findRecord($table, $attributes = [])
     {
@@ -521,5 +530,4 @@ class Lumen extends Framework implements ActiveRecord
 
         return (array) $query->first();
     }
-
 }

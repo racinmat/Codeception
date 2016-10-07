@@ -73,7 +73,9 @@ class GroupManager
                         // if the current line is blank then we need to move to the next line
                         // otherwise the current codeception directory becomes part of the group
                         // which causes every single test to run
-                        if (trim($test) === '') continue;
+                        if (trim($test) === '') {
+                            continue;
+                        }
 
                         $file = trim(Configuration::projectDir() . $test);
                         $file = str_replace(['/', '\\'], [DIRECTORY_SEPARATOR, DIRECTORY_SEPARATOR], $file);
@@ -101,6 +103,13 @@ class GroupManager
         }
         if ($test instanceof \PHPUnit_Framework_TestCase) {
             $groups = array_merge($groups, \PHPUnit_Util_Test::getGroups(get_class($test), $test->getName(false)));
+        }
+        if ($test instanceof \PHPUnit_Framework_TestSuite_DataProvider) {
+            $firstTest = $test->testAt(0);
+            if ($firstTest != false && $firstTest instanceof TestInterface) {
+                $groups = array_merge($groups, $firstTest->getMetadata()->getGroups());
+                $filename = Descriptor::getTestFileName($firstTest);
+            }
         }
 
         foreach ($this->testsInGroups as $group => $tests) {

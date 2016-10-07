@@ -7,7 +7,7 @@ use Codeception\Exception\ModuleConfigException;
 use Codeception\Lib\Interfaces\DependsOnModule;
 use Codeception\Lib\Interfaces\DoctrineProvider;
 use Codeception\TestInterface;
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Codeception\Util\Stub;
 
 /**
@@ -91,7 +91,7 @@ modules:
 EOF;
 
     /**
-     * @var \Doctrine\ORM\EntityManager
+     * @var \Doctrine\ORM\EntityManagerInterface
      */
     public $em = null;
 
@@ -148,10 +148,10 @@ EOF;
         }
 
 
-        if (!($this->em instanceof \Doctrine\ORM\EntityManager)) {
+        if (!($this->em instanceof \Doctrine\ORM\EntityManagerInterface)) {
             throw new ModuleConfigException(
                 __CLASS__,
-                "Connection object is not an instance of \\Doctrine\\ORM\\EntityManager.\n"
+                "Connection object is not an instance of \\Doctrine\\ORM\\EntityManagerInterface.\n"
                 . "Use `connection_callback` or dependent framework modules to specify one"
             );
         }
@@ -161,7 +161,7 @@ EOF;
 
     public function _after(TestInterface $test)
     {
-        if (!$this->em instanceof \Doctrine\ORM\EntityManager) {
+        if (!$this->em instanceof \Doctrine\ORM\EntityManagerInterface) {
             return;
         }
         if ($this->config['cleanup'] && $this->em->getConnection()->isTransactionActive()) {
@@ -213,7 +213,6 @@ EOF;
      */
     public function persistEntity($obj, $values = [])
     {
-
         if ($values) {
             $reflectedObj = new \ReflectionClass($obj);
             foreach ($values as $key => $val) {
@@ -242,7 +241,8 @@ EOF;
      *
      * ```
      *
-     * This creates a stub class for Entity\User repository with redefined method findByUsername, which will always return the NULL value.
+     * This creates a stub class for Entity\User repository with redefined method findByUsername,
+     * which will always return the NULL value.
      *
      * @param $classname
      * @param array $methods
@@ -259,7 +259,8 @@ EOF;
         }
 
         $mock = Stub::make(
-            $customRepositoryClassName, array_merge(
+            $customRepositoryClassName,
+            array_merge(
                 [
                     '_entityName' => $metadata->name,
                     '_em' => $em,
@@ -275,7 +276,10 @@ EOF;
             $property->setAccessible(true);
             $property->setValue($em, array_merge($property->getValue($em), [$classname => $mock]));
         } else {
-            $this->debugSection('Warning', 'Repository can\'t be mocked, the EventManager class doesn\'t have "repositories" property');
+            $this->debugSection(
+                'Warning',
+                'Repository can\'t be mocked, the EventManager class doesn\'t have "repositories" property'
+            );
         }
     }
 

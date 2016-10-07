@@ -1,4 +1,4 @@
-
+# Symfony
 
 
 This module uses Symfony Crawler and HttpKernel to emulate requests and test response.
@@ -20,7 +20,8 @@ This module uses Symfony Crawler and HttpKernel to emulate requests and test res
 * environment: 'local' - environment used for load kernel
 * debug: true - turn on/off debug mode
 * em_service: 'doctrine.orm.entity_manager' - use the stated EntityManager to pair with Doctrine Module.
-* cache_router: 'false' - enable router caching between tests in order to [increase performance](http://lakion.com/blog/how-did-we-speed-up-sylius-behat-suite-with-blackfire) 
+* cache_router: 'false' - enable router caching between tests in order to [increase performance](http://lakion.com/blog/how-did-we-speed-up-sylius-behat-suite-with-blackfire)
+* rebootable_client: 'true' - reboot client's kernel before each request
 
 ### Example (`functional.suite.yml`) - Symfony 2.x Directory Structure
 
@@ -38,7 +39,8 @@ This module uses Symfony Crawler and HttpKernel to emulate requests and test res
 * environment: 'local' - environment used for load kernel
 * em_service: 'doctrine.orm.entity_manager' - use the stated EntityManager to pair with Doctrine Module.
 * debug: true - turn on/off debug mode
-* cache_router: 'false' - enable router caching between tests in order to [increase performance](http://lakion.com/blog/how-did-we-speed-up-sylius-behat-suite-with-blackfire) 
+* cache_router: 'false' - enable router caching between tests in order to [increase performance](http://lakion.com/blog/how-did-we-speed-up-sylius-behat-suite-with-blackfire)
+* rebootable_client: 'true' - reboot client's kernel before each request
 
 ### Example (`functional.suite.yml`) - Symfony 3 Directory Structure
 
@@ -54,7 +56,6 @@ This module uses Symfony Crawler and HttpKernel to emulate requests and test res
 
 * kernel - HttpKernel instance
 * client - current Crawler instance
-* container - dependency injection container instance
 
 ## Parts
 
@@ -75,6 +76,9 @@ modules:
             browser: phantomjs
 ```
 
+
+
+## Actions
 
 ### _findElements
 
@@ -540,6 +544,20 @@ $I->dontSeeOptionIsSelected('#form input[name=payment]', 'Visa');
 
 
 
+### dontSeeResponseCodeIs
+ 
+Checks that response code is equal to value provided.
+
+```php
+<?php
+$I->dontSeeResponseCodeIs(200);
+
+// recommended \Codeception\Util\HttpCode
+$I->dontSeeResponseCodeIs(\Codeception\Util\HttpCode::OK);
+```
+ * `param` $code
+
+
 ### fillField
  
 Fills a text field or textarea with the given string.
@@ -624,6 +642,21 @@ $aLinks = $I->grabMultiple('a', 'href');
  * `return` string[]
 
 
+### grabService
+ 
+Grabs a service from Symfony DIC container.
+Recommended to use for unit testing.
+
+``` php
+<?php
+$em = $I->grabService('doctrine');
+?>
+```
+
+ * `param` $service
+ * `[Part]` services
+
+
 ### grabServiceFromContainer
  
 Grabs a service from Symfony DIC container.
@@ -637,12 +670,14 @@ $em = $I->grabServiceFromContainer('doctrine');
 
  * `param` $service
  * `[Part]` services
+ * `deprecated`  Use grabService instead
 
 
 ### grabTextFrom
  
 Finds and returns the text contents of the given element.
-If a fuzzy locator is used, the element is found using CSS, XPath, and by matching the full page source by regular expression.
+If a fuzzy locator is used, the element is found using CSS, XPath,
+and by matching the full page source by regular expression.
 
 ``` php
 <?php
@@ -693,6 +728,35 @@ Moves back in history.
  * `param int` $numberOfSteps (default value 1)
 
 
+### persistService
+ 
+Get service $serviceName and add it to the lists of persistent services.
+If $isPermanent then service becomes persistent between tests
+
+ * `param string`  $serviceName
+ * `param boolean` $isPermanent
+
+
+### rebootClientKernel
+ 
+Reboot client's kernel.
+Can be used to manually reboot kernel when 'rebootable_client' => false
+
+``` php
+<?php
+...
+perform some requests
+...
+$I->rebootClientKernel();
+...
+perform other requests
+...
+
+?>
+```
+
+
+
 ### resetCookie
  
 Unsets cookie with the given name.
@@ -707,7 +771,7 @@ You can set additional cookie params like `domain`, `path` in array passed as la
  
 Checks that the current page contains the given string (case insensitive).
 
-You can specify a specific HTML element (via CSS or XPath) as the second 
+You can specify a specific HTML element (via CSS or XPath) as the second
 parameter to only search within that element.
 
 ``` php
@@ -1034,8 +1098,15 @@ Asserts that current page has 404 response status code.
  
 Checks that response code is equal to value provided.
 
- * `param` $code
+```php
+<?php
+$I->seeResponseCodeIs(200);
 
+// recommended \Codeception\Util\HttpCode
+$I->seeResponseCodeIs(\Codeception\Util\HttpCode::OK);
+```
+
+ * `param` $code
 
 
 ### selectOption
@@ -1055,6 +1126,15 @@ Provide an array for the second argument to select multiple options:
 ``` php
 <?php
 $I->selectOption('Which OS do you use?', array('Windows','Linux'));
+?>
+```
+
+Or provide an associative array for the second argument to specifically define which selection method should be used:
+
+``` php
+<?php
+$I->selectOption('Which OS do you use?', array('text' => 'Windows')); // Only search by text 'Windows'
+$I->selectOption('Which OS do you use?', array('value' => 'windows')); // Only search by value 'windows'
 ?>
 ```
 
@@ -1138,8 +1218,8 @@ Submits the given form on the page, optionally with the given form
 values.  Pass the form field's values as an array in the second
 parameter.
 
-Although this function can be used as a short-hand version of 
-`fillField()`, `selectOption()`, `click()` etc. it has some important 
+Although this function can be used as a short-hand version of
+`fillField()`, `selectOption()`, `click()` etc. it has some important
 differences:
 
  * Only field *names* may be used, not CSS/XPath selectors nor field labels
@@ -1149,7 +1229,7 @@ differences:
    like you would if you called `fillField()` or `selectOption()` with
    a missing field.
 
-Fields that are not provided will be filled by their values from the page, 
+Fields that are not provided will be filled by their values from the page,
 or from any previous calls to `fillField()`, `selectOption()` etc.
 You don't need to click the 'Submit' button afterwards.
 This command itself triggers the request to form's action.
@@ -1230,7 +1310,7 @@ $I->submitForm(
 );
 ```
 
-This function works well when paired with `seeInFormFields()` 
+This function works well when paired with `seeInFormFields()`
 for quickly testing CRUD interfaces and form validation logic.
 
 ``` php
@@ -1274,7 +1354,7 @@ $I->submitForm('#my-form', [
 Mixing string and boolean values for a checkbox's value is not supported
 and may produce unexpected results.
 
-Field names ending in `[]` must be passed without the trailing square 
+Field names ending in `[]` must be passed without the trailing square
 bracket characters, and must contain an array for its value.  This allows
 submitting multiple values with the same name, consider:
 
@@ -1335,4 +1415,11 @@ $I->uncheckOption('#notify');
 
  * `param` $option
 
-<p>&nbsp;</p><div class="alert alert-warning">Module reference is taken from the source code. <a href="https://github.com/Codeception/Codeception/tree/2.1/src/Codeception/Module/Symfony.php">Help us to improve documentation. Edit module reference</a></div>
+
+### unpersistService
+ 
+Remove service $serviceName from the lists of persistent services.
+
+ * `param string` $serviceName
+
+<p>&nbsp;</p><div class="alert alert-warning">Module reference is taken from the source code. <a href="https://github.com/Codeception/Codeception/tree/2.2/src/Codeception/Module/Symfony.php">Help us to improve documentation. Edit module reference</a></div>

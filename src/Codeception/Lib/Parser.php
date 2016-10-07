@@ -104,7 +104,6 @@ class Parser
                 $isFriend = false;
             }
         }
-
     }
 
     protected function addStep($matches)
@@ -127,7 +126,11 @@ class Parser
         if (empty($config['settings']['lint'])) { // lint disabled in config
             return;
         }
-        exec("php -l ".escapeshellarg($file)." 2>&1", $output, $code);
+        @exec("php -l " . escapeshellarg($file) . " 2>&1", $output, $code);
+        if (!isset($code)) {
+            //probably exec function is disabled #3324
+            return;
+        }
         if ($code !== 0) {
             throw new TestParseException($file, implode("\n", $output));
         }
@@ -192,7 +195,7 @@ class Parser
 
     /*
      * Include in different scope to prevent included file from affecting $file variable
-     */ 
+     */
     private static function includeFile($file)
     {
         include_once $file;
