@@ -1149,7 +1149,7 @@ class InnerBrowser extends Module implements Web, PageSourceSaver, ElementLocato
         }
     }
 
-    protected function filterByAttributes(Crawler $nodes, array $attributes)
+	public function filterByAttributes(Crawler $nodes, array $attributes)
     {
         foreach ($attributes as $attr => $val) {
             $nodes = $nodes->reduce(
